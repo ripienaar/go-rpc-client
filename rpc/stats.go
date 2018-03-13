@@ -62,6 +62,9 @@ func (s *Stats) All() bool {
 		return false
 	}
 
+	// TODO: on large response sets this is very slow and if there are many
+	// not responding but many that did respond, this gets called over and
+	// over again from receiver() and things just grinds to a halt
 	return len(s.NoResponseFrom()) == 0
 }
 
