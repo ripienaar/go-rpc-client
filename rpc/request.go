@@ -96,6 +96,15 @@ func DirectRequest() RequestOption {
 	}
 }
 
+// BroadcastRequest for the request to be a broadcast mode
+//
+// **NOTE:** You need to ensure you have filters etc done
+func BroadcastRequest() RequestOption {
+	return func(o *RequestOptions) {
+		o.RequestType = "request"
+	}
+}
+
 // WithWorkers configures the amount of workers used to process responses
 func WithWorkers(w int) RequestOption {
 	return func(o *RequestOptions) {
@@ -153,7 +162,7 @@ func WithReplyHandler(f func(protocol.Reply, *RPCReply)) RequestOption {
 func (c *Client) Do(ctx context.Context, wg *sync.WaitGroup, msg *choria.Message, opts ...RequestOption) (RequestResult, error) {
 	options := &RequestOptions{
 		ProtocolVersion: protocol.RequestV1,
-		RequestType:     "request",
+		RequestType:     "direct_request",
 		Collective:      c.fw.Config.MainCollective,
 		ProcessReplies:  true,
 		ReceiveReplies:  true,
@@ -228,6 +237,8 @@ func (c *Client) publish(msg *choria.Message, options *RequestOptions) error {
 func (c *Client) configureMessage(msg *choria.Message, options *RequestOptions) {
 	if len(options.Targets) > 0 {
 		msg.DiscoveredHosts = options.Targets
+	} else {
+		options.Targets = msg.DiscoveredHosts
 	}
 
 	msg.SetProtocolVersion(options.ProtocolVersion)

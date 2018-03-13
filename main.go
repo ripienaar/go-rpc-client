@@ -25,15 +25,10 @@ var (
 	debug  bool
 	config string
 
-	nodes      string
-	batchSleep int
-	batchSize  int
+	nodes string
 
 	timeout int
 
-	sigs chan os.Signal
-
-	wg     *sync.WaitGroup
 	ctx    context.Context
 	cancel func()
 	err    error
@@ -53,8 +48,6 @@ func cli() {
 }
 
 func setup() {
-	wg = &sync.WaitGroup{}
-
 	fw, err = choria.New(config)
 	kingpin.FatalIfError(err, "Could not initialize Choria: %s", config, err)
 	fw.SetupLogging(debug)
@@ -106,10 +99,14 @@ func execute() (*rpc.Stats, error) {
 		return nil, err
 	}
 
+	wg := &sync.WaitGroup{}
+
+	// don't set rpc.WithTargets() then
+	// msg.DiscoveredHosts = hosts
+
 	result, err := client.Do(ctx, wg, msg,
 		rpc.WithProgress(),
-		rpc.DirectRequest(),
-		rpc.InCollective(msg.Collective()),
+		rpc.InCollective(fw.Config.MainCollective),
 		rpc.WithTargets(hosts),
 		rpc.WithReplyHandler(func(r protocol.Reply, d *rpc.RPCReply) {
 			log.Debugf("Reply: %s: %s: %v", r.SenderID(), d.Statusmsg, string(d.Data))
@@ -129,6 +126,16 @@ func main() {
 	stats, err := execute()
 	kingpin.FatalIfError(err, "Could not execute: %s", err)
 
+	showStats(stats)
+
+	if stats.All() {
+		os.Exit(0)
+	} else {
+		os.Exit(1)
+	}
+}
+
+func showStats(stats *rpc.Stats) {
 	pubtime, _ := stats.PublishDuration()
 	totaltime, _ := stats.RequestDuration()
 	ur := stats.UnexpectedResponseFrom()
@@ -168,15 +175,13 @@ func main() {
 		tw.Flush()
 		fmt.Println("")
 	}
-
-	os.Exit(0)
 }
 
 func signalWatch() {
 	ctx, cancel = context.WithTimeout(context.Background(), time.Duration(timeout)*time.Second)
 
 	watcher := func() {
-		sigs = make(chan os.Signal, 1)
+		sigs := make(chan os.Signal, 1)
 		signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
 
 		select {
