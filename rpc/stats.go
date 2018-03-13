@@ -49,7 +49,7 @@ func (s *Stats) showProgress(ctx context.Context) {
 		case <-ticker.C:
 			discovered := s.DiscoveredCount()
 
-			fmt.Printf("ok: %-5d failed: %-5d received: %d / %d\n", s.passed.Load(), s.failed.Load(), discovered-s.ResponsesCount(), discovered)
+			fmt.Printf("ok: %-5d failed: %-5d received: %d / %d\n", s.passed.Load(), s.failed.Load(), s.ResponsesCount(), discovered)
 		case <-ctx.Done():
 			return
 		}
@@ -58,7 +58,7 @@ func (s *Stats) showProgress(ctx context.Context) {
 
 // All determines if all expected nodes replied already
 func (s *Stats) All() bool {
-	if int(s.responses.Load()) < s.responsesFrom.Cardinality() {
+	if int(s.responses.Load()) < s.discoveredNodes.Cardinality() {
 		return false
 	}
 

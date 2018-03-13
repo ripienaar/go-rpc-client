@@ -14,8 +14,8 @@ import (
 	"time"
 
 	"github.com/choria-io/go-choria/choria"
-	"github.com/choria-io/go-protocol/protocol"
 	"github.com/ripienaar/go-rpc-client/rpc"
+	"github.com/choria-io/go-protocol/protocol"
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/alecthomas/kingpin.v2"
 )

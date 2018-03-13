@@ -1,4 +1,4 @@
-package: github.com/choria-io/client
+package: github.com/ripienaar/go-rpc-client
 import:
 - package: github.com/choria-io/go-choria
   version: 1a15e221dff1c48f2456945c5195e95572172fbf
