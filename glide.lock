@@ -1,5 +1,5 @@
-hash: 0813c500761d084ec7a61700bf8d35ef270366fe5ad977001bc7280364400db3
-updated: 2018-03-12T14:56:56.993565+01:00
+hash: 3d25a6de3566c6c250f707878956900fa67e77e76870e3314ff3c3252c411544
+updated: 2018-03-22T15:55:31.593013+01:00
 imports:
 - name: github.com/alecthomas/template
   version: a0175ee3bccc567396460bf5acd36800cb10c49c
@@ -38,8 +38,6 @@ imports:
   - maxlength
   - regex
   - shellsafe
-- name: github.com/deckarep/golang-set
-  version: 1d4478f51bed434f1dadf96dcd9b43aabac66795
 - name: github.com/golang/protobuf
   version: 1643683e1b54a9e88ad26d98f81400c8c9d9f4f9
   subpackages:

@@ -6,7 +6,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/deckarep/golang-set"
 	"go.uber.org/atomic"
 )
 
@@ -14,8 +13,10 @@ import (
 type Stats struct {
 	RequestID string
 
-	responsesFrom   mapset.Set
-	discoveredNodes mapset.Set
+	discoveredNodes []string
+
+	outstandingNodes   *NodeList
+	unexpectedRespones *NodeList
 
 	responses atomic.Int32
 	passed    atomic.Int32
@@ -35,9 +36,10 @@ type Stats struct {
 // NewStats initializes a new stats instance
 func NewStats() *Stats {
 	return &Stats{
-		responsesFrom:   mapset.NewSet(),
-		discoveredNodes: mapset.NewSet(),
-		mu:              &sync.Mutex{},
+		discoveredNodes:    []string{},
+		outstandingNodes:   NewNodeList(),
+		unexpectedRespones: NewNodeList(),
+		mu:                 &sync.Mutex{},
 	}
 }
 
@@ -58,13 +60,10 @@ func (s *Stats) showProgress(ctx context.Context) {
 
 // All determines if all expected nodes replied already
 func (s *Stats) All() bool {
-	if int(s.responses.Load()) < s.discoveredNodes.Cardinality() {
+	if s.outstandingNodes.Count() == 0 {
 		return false
 	}
 
-	// TODO: on large response sets this is very slow and if there are many
-	// not responding but many that did respond, this gets called over and
-	// over again from receiver() and things just grinds to a halt
 	return len(s.NoResponseFrom()) == 0
 }
 
@@ -75,26 +74,12 @@ func (s *Stats) StartProgress(ctx context.Context) {
 
 // NoResponseFrom calculates discovered which hosts did not respond
 func (s *Stats) NoResponseFrom() []string {
-	diff := s.discoveredNodes.Difference(s.responsesFrom)
-
-	r := []string{}
-	for n := range diff.Iter() {
-		r = append(r, n.(string))
-	}
-
-	return r
+	return s.outstandingNodes.Hosts()
 }
 
 // UnexpectedResponseFrom calculates which hosts responses that we did not expect responses from
 func (s *Stats) UnexpectedResponseFrom() []string {
-	diff := s.responsesFrom.Difference(s.discoveredNodes)
-
-	r := []string{}
-	for n := range diff.Iter() {
-		r = append(r, n.(string))
-	}
-
-	return r
+	return s.unexpectedRespones.Hosts()
 }
 
 // SetDiscoveredNodes records the node names we expect to communicate with
@@ -102,11 +87,10 @@ func (s *Stats) SetDiscoveredNodes(nodes []string) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	s.discoveredNodes.Clear()
+	s.discoveredNodes = nodes
 
-	for _, node := range nodes {
-		s.discoveredNodes.Add(node)
-	}
+	s.outstandingNodes.Clear()
+	s.outstandingNodes.AddHosts(nodes)
 }
 
 // FailedRequestInc increments the failed request counter by one
@@ -121,14 +105,20 @@ func (s *Stats) PassedRequestInc() {
 
 // RecordReceived reords the fact that one message was received
 func (s *Stats) RecordReceived(sender string) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
 	s.responses.Inc()
 
-	s.responsesFrom.Add(sender)
+	known := s.outstandingNodes.DeleteIfKnown(sender)
+	if !known {
+		s.unexpectedRespones.AddHost(sender)
+	}
 }
 
 // DiscoveredCount is how many nodes were discovered
 func (s *Stats) DiscoveredCount() int {
-	return s.discoveredNodes.Cardinality()
+	return len(s.discoveredNodes)
 }
 
 // FailCount is the number of responses that were failures
