@@ -60,11 +60,7 @@ func (s *Stats) showProgress(ctx context.Context) {
 
 // All determines if all expected nodes replied already
 func (s *Stats) All() bool {
-	if s.outstandingNodes.Count() == 0 {
-		return false
-	}
-
-	return len(s.NoResponseFrom()) == 0
+	return s.outstandingNodes.Count() == 0
 }
 
 // StartProgress starts a basic progress display that will be interrupted by the context

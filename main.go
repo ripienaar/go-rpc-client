@@ -12,6 +12,7 @@ import (
 	"syscall"
 	"text/tabwriter"
 	"time"
+	"runtime/pprof"
 
 	"github.com/choria-io/go-choria/choria"
 	"github.com/ripienaar/go-rpc-client/rpc"
@@ -24,6 +25,7 @@ var (
 	fw     *choria.Framework
 	debug  bool
 	config string
+	profileFile string
 
 	nodes string
 
@@ -43,11 +45,16 @@ func cli() {
 	app.Flag("config", "Configuration Path").Default(choria.UserConfig()).ExistingFileVar(&config)
 	app.Flag("debug", "Debug Logging").Default("false").BoolVar(&debug)
 	app.Flag("timeout", "How long to process nodes for").Default("0").IntVar(&timeout)
+	app.Flag("profile", "Enables profiling of the client into the provided file").StringVar(&profileFile)
 
 	kingpin.MustParse(app.Parse(os.Args[1:]))
 }
 
 func setup() {
+	if profileFile != "" {
+		profile()
+	}
+
 	fw, err = choria.New(config)
 	kingpin.FatalIfError(err, "Could not initialize Choria: %s", config, err)
 	fw.SetupLogging(debug)
@@ -101,9 +108,6 @@ func execute() (*rpc.Stats, error) {
 
 	wg := &sync.WaitGroup{}
 
-	// don't set rpc.WithTargets() then
-	// msg.DiscoveredHosts = hosts
-
 	result, err := client.Do(ctx, wg, msg,
 		rpc.WithProgress(),
 		rpc.InCollective(fw.Config.MainCollective),
@@ -128,11 +132,27 @@ func main() {
 
 	showStats(stats)
 
+	if profileFile != "" {
+		log.Warn("Stopping CPU profiling")
+		pprof.StopCPUProfile()
+	}
+
 	if stats.All() {
 		os.Exit(0)
 	} else {
 		os.Exit(1)
 	}
+}
+
+func profile() error {
+	log.Warnf("Starting CPU profiling, results logged to %s", profileFile)
+
+	f, err := os.Create(profileFile)
+	if err != nil {
+		return err
+	}
+
+	return pprof.StartCPUProfile(f)
 }
 
 func showStats(stats *rpc.Stats) {
