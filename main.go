@@ -7,24 +7,24 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"runtime/pprof"
 	"strings"
 	"sync"
 	"syscall"
 	"text/tabwriter"
 	"time"
-	"runtime/pprof"
 
 	"github.com/choria-io/go-choria/choria"
-	"github.com/ripienaar/go-rpc-client/rpc"
 	"github.com/choria-io/go-protocol/protocol"
+	"github.com/ripienaar/go-rpc-client/rpc"
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/alecthomas/kingpin.v2"
 )
 
 var (
-	fw     *choria.Framework
-	debug  bool
-	config string
+	fw          *choria.Framework
+	debug       bool
+	config      string
 	profileFile string
 
 	nodes string
@@ -110,7 +110,6 @@ func execute() (*rpc.Stats, error) {
 
 	result, err := client.Do(ctx, wg, msg,
 		rpc.WithProgress(),
-		rpc.InCollective(fw.Config.MainCollective),
 		rpc.WithTargets(hosts),
 		rpc.WithReplyHandler(func(r protocol.Reply, d *rpc.RPCReply) {
 			log.Debugf("Reply: %s: %s: %v", r.SenderID(), d.Statusmsg, string(d.Data))

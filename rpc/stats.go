@@ -78,6 +78,18 @@ func (s *Stats) UnexpectedResponseFrom() []string {
 	return s.unexpectedRespones.Hosts()
 }
 
+// WaitingFor checks if any of the given nodes are still outstanding
+func (s *Stats) WaitingFor(nodes []string) bool {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	if s.outstandingNodes.HaveAny(nodes) {
+		return false
+	}
+
+	return true
+}
+
 // SetDiscoveredNodes records the node names we expect to communicate with
 func (s *Stats) SetDiscoveredNodes(nodes []string) {
 	s.mu.Lock()

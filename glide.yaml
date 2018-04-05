@@ -1,7 +1,7 @@
 package: github.com/ripienaar/go-rpc-client
 import:
 - package: github.com/choria-io/go-choria
-  version: 1a15e221dff1c48f2456945c5195e95572172fbf
+  version: 818b09f76b5ae985c7260a256fb298a5a8dc2688
   subpackages:
   - choria
 - package: gopkg.in/alecthomas/kingpin.v2

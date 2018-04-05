@@ -1,5 +1,5 @@
-hash: 3d25a6de3566c6c250f707878956900fa67e77e76870e3314ff3c3252c411544
-updated: 2018-03-22T15:55:31.593013+01:00
+hash: 37a7b6b31d2de23eaf0592560372f350d5f52cb15be187a51d1e332ba3b5d278
+updated: 2018-03-27T12:50:48.562015+02:00
 imports:
 - name: github.com/alecthomas/template
   version: a0175ee3bccc567396460bf5acd36800cb10c49c
@@ -12,7 +12,7 @@ imports:
   subpackages:
   - quantile
 - name: github.com/choria-io/go-choria
-  version: 1a15e221dff1c48f2456945c5195e95572172fbf
+  version: 818b09f76b5ae985c7260a256fb298a5a8dc2688
   subpackages:
   - backoff
   - build
@@ -22,15 +22,16 @@ imports:
   - server/agents
   - srvcache
 - name: github.com/choria-io/go-confkey
-  version: 3a0ddeafbca44f8cd05f594ec7a6788913f0c1dc
+  version: 1416c30a60054226a232e049eb5496d6d6afb5f2
 - name: github.com/choria-io/go-protocol
   version: 72bc3ca9593e692e55a3f5dda61194803f54d619
   subpackages:
   - protocol
   - protocol/v1
 - name: github.com/choria-io/go-validator
-  version: 99e0f793dd701e8cf45fd27624390ea43699e3b9
+  version: 4ce2ef25983faa873cc4bcea0f1ef2a4273d42cc
   subpackages:
+  - duration
   - enum
   - ipaddress
   - ipv4
@@ -49,7 +50,7 @@ imports:
   subpackages:
   - pbutil
 - name: github.com/nats-io/go-nats
-  version: d66cb54e6b7bdd93f0b28afc8450d84c780dfb68
+  version: 062418ea1c2181f52dc0f954f6204370519a868b
   subpackages:
   - encoders/builtin
   - util

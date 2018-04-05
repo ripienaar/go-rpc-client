@@ -63,18 +63,6 @@ func (c *Client) NewRPCRequest(agent string, action string, payload json.RawMess
 	return msg, nil
 }
 
-// ParseReplyData parses reply data and populates a Reply and custom Data
-func ParseReplyData(source []byte) (*RPCReply, error) {
-	reply := &RPCReply{}
-
-	err := json.Unmarshal(source, reply)
-	if err != nil {
-		return reply, fmt.Errorf("could not decode source data: %s", err)
-	}
-
-	return reply, nil
-}
-
 func (c *Client) connect(ctx context.Context, name string) (ClientConnector, error) {
 	servers := func() ([]choria.Server, error) {
 		return c.fw.MiddlewareServers()

@@ -76,3 +76,17 @@ func (n *NodeList) Have(host string) bool {
 
 	return ok
 }
+
+func (n *NodeList) HaveAny(hosts []string) bool {
+	n.RLock()
+	defer n.RUnlock()
+
+	for _, host := range hosts {
+		_, ok := n.hosts[host]
+		if ok {
+			return true
+		}
+	}
+
+	return false
+}
